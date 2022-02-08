@@ -11,9 +11,9 @@ const userSchema = new mongoose.Schema({
     profile_pic: {type: String, default:'default'},
     profile_bg: {type: String, default:'default'},
     profile_desc: {type: String, default:''},
-    follower: {type: [String], default:[]},
+    articles: {type: [String], default:[]},
+    followers: {type: [String], default:[]},
     following: {type: [String], default:[]},
-    created_at: {type: Date, default: () => Date.now(), immutable:true}
-})
+}, { timestamps: true })
 
 export default mongoose.model('User', userSchema)
