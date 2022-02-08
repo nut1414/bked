@@ -2,7 +2,7 @@
   "name": "bked",
   "version": "1.0.0",
   "description": "",
-  "main": "server.js",
+  "main": "./src/server.js",
   "type": "module",
   "dependencies": {
     "cors": "^2.8.5",
@@ -23,8 +23,8 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js",
-    "dev": "npx nodemon server.js"
+    "start": "node ./src/server.js",
+    "dev": "npx nodemon ./src/server.js"
   },
   "author": "",
   "license": "ISC"
