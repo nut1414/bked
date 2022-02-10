@@ -14,6 +14,7 @@ const userSchema = new mongoose.Schema({
     articles: {type: [String], default:[]},
     followers: {type: [String], default:[]},
     following: {type: [String], default:[]},
+    role: {type: String, default: 'user', enum: ['user', 'admin']}
 }, { timestamps: true })
 
 export default mongoose.model('User', userSchema)
