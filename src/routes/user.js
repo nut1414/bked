@@ -10,7 +10,7 @@ const storage = multer.diskStorage({
         cb(null, 'uploads/')
     },
     filename: (req, file, cb) => {
-        let filename = req.params.id + '-' + nanoid() + '.' + mime.extension(file.mimetype)
+        let filename = nanoid() + '.' + mime.extension(file.mimetype)
         cb(null,filename)
     }
 })
