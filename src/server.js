@@ -3,9 +3,12 @@ dotenv.config()
 import express from 'express'
 import mongoose from 'mongoose'
 import cors from 'cors'
+import path from 'path'
 import userRoute from './routes/user.js'
 import articleRoute from './routes/article.js'
 import adminRoute from './routes/admin.js'
+
+const __dirname = path.resolve()
 
 const app = express()
 
@@ -15,6 +18,7 @@ app.use(cors())
 app.use('/u',userRoute)
 app.use('/a',articleRoute)
 app.use('/admin',adminRoute)
+app.use('/uploads',express.static(path.join(__dirname,'uploads')))
 
 app.get('/',(req,res) =>{
     res.status(200).send('Service is online.')
