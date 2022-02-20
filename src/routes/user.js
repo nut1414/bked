@@ -70,5 +70,27 @@ router.post('/:id/picup', upload.single('image'), async (req, res) => {
 
 
 
+router.post('/:id/bgpicup', upload.single('image'), async (req, res) => {
+    let user_data = await User.findOne({user_id:req.params.id})
+    if(req.filename && user_data){
+        await fs.promises.unlink(path.resolve('uploads',user_data.profile_bg)).catch(e=>console.log(e))
+        try{
+            User.findOneAndUpdate({user_id:req.params.id},{profile_bg:req.filename},{new:true}).then(update_ud=>{
+                if(update_ud){
+                    console.log(req.filename)
+                    res.status(200).send(update_ud)
+                    console.log(update_ud)
+                }else throw 'User not found'
+            })
+        }catch(err){
+            res.status(404).send({error:err})
+            console.log(err)
+            User.updateOne({user_id:req.params.id},{profile_bg:'default.jpg'})
+        }
+    }else{
+        res.status(404).send({error:'Unable to complete request.'})
+    }
+})
+
 
 export default router
