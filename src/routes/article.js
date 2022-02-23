@@ -5,7 +5,7 @@ import * as mime from 'mime-types'
 import fs from 'fs'
 import path from 'path'
 import Article from '../models/article.js'
-
+import { verifyUser } from '../utils/auth.js'
 
 const router = express.Router()
 
@@ -29,7 +29,7 @@ router.get('/', (req, res) => {
             console.log(article_data)
         }else throw 'Article not found'
     }).catch((err)=>{
-        res.status(404).send({error:err})
+        res.status(500).send({error:err})
         console.log(err)
     })
 
@@ -44,26 +44,36 @@ router.get('/:id', async (req, res) => {
 })
 
 
-
-router.post('/:id/thumbup', upload.single('image'), async (req, res) => {
-    let article_data = await Article.findOne({article_id:req.params.id})
-    if(req.filename && article_data){
-        await fs.promises.unlink(path.resolve('uploads',article_data.thumb_pic)).catch(e=>console.log(e))
+//untested
+router.post('/:id/bgpicup', verifyUser, upload.single('image'), async (req, res) => {
+    let article = await Article.findOne({article_id:req.params.id})
+    if(!article) res.status(500).send({error:'Unknown Article.'})
+    if(req.filename && article.user_id==req.user._id){
+        if (article.pic!='defaultbg.jpg')
+        await fs.promises.unlink(
+            path.resolve('uploads',user.profile_bg))
+                .catch(e=>console.log(e))
         try{
-            Article.findOneAndUpdate({article_id:req.params.id},{thumb_pic:req.filename},{new:true}).then(update_ad=>{
+            Article.findOneAndUpdate(
+                {article_id:req.params.id},
+                {thumb_pic:req.filename},
+                {new:true})
+                .then(update_ad=>{
                 if(update_ad){
-                    console.log(req.filename)
-                    res.status(200).send(update_ad)
-                    console.log(update_ad)
+                    res.status(200).send({status:'Success!'})
                 }else throw 'Article not found'
-            })
+            }
+            )
         }catch(err){
-            res.status(404).send({error:err})
+            res.status(500).send({error:err})
             console.log(err)
-            Article.updateOne({article_id:req.params.id},{thumb_pic:'default.jpg'})
+            User.updateOne({article_id:req.params.id},{pic:'defaultbg.jpg'})
         }
     }else{
-        res.status(404).send({error:'Unable to complete request.'})
+        if (req.filename)
+        await fs.promises.unlink(path.resolve('uploads',req.filename))
+                         .catch(e=>console.log(e))
+        res.status(500).send({error:'Unable to complete request.'})
     }
 })
 
