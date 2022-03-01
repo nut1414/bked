@@ -37,7 +37,7 @@ router.get('/', (req, res) => {
 
 
 
-router.get('/:id', async (req, res) => {
+router.get('/id/:id', async (req, res) => {
     var article = await Article.findOne({article_id:req.params.id})
     console.log(article)
     res.status(200).send(article)
@@ -45,7 +45,7 @@ router.get('/:id', async (req, res) => {
 
 
 //untested
-router.post('/:id/bgpicup', verifyUser, upload.single('image'), async (req, res) => {
+router.post('/id/:id/bgpicup', verifyUser, upload.single('image'), async (req, res) => {
     let article = await Article.findOne({article_id:req.params.id})
     if(!article) res.status(500).send({error:'Unknown Article.'})
     if(req.filename && article.user_id==req.user._id){

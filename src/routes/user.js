@@ -36,7 +36,7 @@ router.get('/', (req, res) => {
 })
 
 
-router.get('/:id', (req, res) => {
+router.get('/id/:id', (req, res) => {
     User.findOne({user_id:req.params.id}).then(user_data => {
         if(user_data){
             res.status(200).send(user_data)
@@ -51,7 +51,7 @@ router.get('/:id', (req, res) => {
 
 //pic upload are temporary showcase of authentication
 
-router.post('/:id/picup', verifyUser, upload.single('image'), async (req, res) => {
+router.post('/id/:id/picup', verifyUser, upload.single('image'), async (req, res) => {
     let user = await User.findOne({user_id:req.params.id})
     if(!user) res.status(500).send({error:'Unknown User.'})
     if(req.filename && user._id.equals(req.user._id)){
@@ -84,7 +84,7 @@ router.post('/:id/picup', verifyUser, upload.single('image'), async (req, res) =
 })
 
 
-router.post('/:id/bgpicup', verifyUser, upload.single('image'), async (req, res) => {
+router.post('/id/:id/bgpicup', verifyUser, upload.single('image'), async (req, res) => {
     let user = await User.findOne({user_id:req.params.id})
     if(!user) res.status(500).send({error:'Unknown User.'})
     if(req.filename && user._id.equals(req.user._id)){
