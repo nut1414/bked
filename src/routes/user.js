@@ -52,7 +52,7 @@ router.get('/id/:id', (req, res) => {
 //pic upload are temporary showcase of authentication
 
 router.post('/id/:id/picup', verifyUser, upload.single('image'), async (req, res) => {
-    let user = await User.findOne({user_id:req.params.id})
+    let user = await User.findOne({user_id:req.user._id})
     if(!user) res.status(500).send({error:'Unknown User.'})
     if(req.filename && user._id.equals(req.user._id)){
         if (user.profile_pic!='default.jpg')

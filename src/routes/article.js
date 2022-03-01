@@ -5,6 +5,7 @@ import * as mime from 'mime-types'
 import fs from 'fs'
 import path from 'path'
 import Article from '../models/article.js'
+import User from '../models/user.js'
 import { verifyUser } from '../utils/auth.js'
 
 const router = express.Router()
@@ -21,9 +22,9 @@ const storage = multer.diskStorage({
 const upload = multer({storage})
 
 
-
+//need to aggregate better
 router.get('/', (req, res) => {
-    Article.find().then(article_data =>{
+    Article.find().limit(50).then(article_data =>{
         if(article_data){
             res.status(200).send(article_data)
             console.log(article_data)
@@ -37,14 +38,59 @@ router.get('/', (req, res) => {
 
 
 
+router.post('/create', verifyUser, async (req,res) =>{
+    let user = await User.findOne({_id:req.user._id})
+    try{
+        if(!user) throw 'User does not exist.'
+        const article = new Article({
+            title: req.body.title,
+            user_id: req.user._id,
+            text: req.body.text})
+        if(!article) throw 'Fail to create article.'
+        await user.articles.push(article._id)
+        await article.save()
+        await user.save()
+
+        res.send({status: 'ok' , message: 'Article created.', article_id: article._id })
+    } catch(err){
+        res.status(500).send({error:err})
+        console.log(err)
+    }
+})
+
+
 router.get('/id/:id', async (req, res) => {
-    var article = await Article.findOne({article_id:req.params.id})
+    var article = await Article.findOne({_id:req.params.id})
+    if (article) Article.updateOne({_id:req.params.id},{views:{$inc: { seq: 1} }})
     console.log(article)
     res.status(200).send(article)
 })
 
+router.delete('/id/:id', verifyUser, async (req,res) =>{
+    let user = await User.findOne({_id:req.user._id})
+    let article = await Article.findOne({_id:req.params.id})
+    try{
+        if(!user) throw 'User does not exist.'
+        if(!article) throw 'Article does not exist.'
+        if(article.user_id != req.user._id) throw 'User does not have permission to delete this.'
+        
+        await User.updateOne({ _id:req.user._id }, {
+            $pullAll: {
+                articles: [req.params.id],
+            },
+        });
+        await Article.deleteOne({_id:req.params.id})
+
+        res.send({status: 'ok' , message: 'Article deleted.', article_id: article._id })
+    } catch(err){
+        res.status(500).send({error:err})
+        console.log(err)
+    }
+})
+
 
 //untested
+/*
 router.post('/id/:id/bgpicup', verifyUser, upload.single('image'), async (req, res) => {
     let article = await Article.findOne({article_id:req.params.id})
     if(!article) res.status(500).send({error:'Unknown Article.'})
@@ -76,6 +122,6 @@ router.post('/id/:id/bgpicup', verifyUser, upload.single('image'), async (req, r
         res.status(500).send({error:'Unable to complete request.'})
     }
 })
-
+*/
 
 export default router

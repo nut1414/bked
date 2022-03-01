@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken'
 
 export const getToken = user => {
     return jwt.sign(user, process.env.JWT_SECRET, {
-        expiresIn: eval(process.env.SESSION_EXPIRE),
+        expiresIn: process.env.SESSION_EXPIRE,
     })
 }
 

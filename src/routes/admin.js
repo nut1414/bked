@@ -16,8 +16,8 @@ router.post('/create_user',(req,res) =>{
                 user_id: req.body.user_id,
                 user_name: req.body.user_name,
                 email: req.body.email,
-                hashed_password: req.body.password,
-                salt: 'salt'})
+                password: req.body.password,
+                })
             user.save().then(()=>{
                 console.log('User was registered successfully!')
                 res.send({status: 'ok' ,message: 'User was registered successfully!' })
