@@ -1,3 +1,5 @@
+import User from '../models/user.js'
+
 export const validateEmail = (email) => {
     const re = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/
     return re.test(email)
@@ -6,4 +8,48 @@ export const validateEmail = (email) => {
 export const validateUsername = (username) => {
     const re = /^[A-Za-z][A-Za-z0-9_]$/
     return re.test(username)
+}
+
+export const parseSearchQuery = async (req,res,next) => {
+    var query = req.query
+    var page = parseInt(query.page)
+    var limit = parseInt(query.limit)
+    var title = query.title
+    var tags = query.tags
+    var author = query.author
+    try{
+        
+        if ( query ){
+            page = (page) ? page : 1
+            limit = (limit) ? limit  : 50
+            if (author){
+                try{
+                    var user = await User.findOne({user_id:req.query.author}) 
+                    var user_id = user._id
+                } catch(e){
+                }
+                console.log(user_id)
+            }
+            if (title){
+                var title_query = {$regex: title,$options: 'gi'}
+            }
+            //tags to be implemented.
+            req.query = {
+                page,
+                limit,
+                title:title_query,
+                user_id
+            }
+            Object.keys(req.query).forEach(key => {
+                if (req.query[key] === undefined) {
+                  delete req.query[key];
+                }
+              })
+
+            return next()
+        }else throw Error('Invalid search query')
+    } catch(e){
+        return res.status(500).json({error:e});
+    }
+
 }

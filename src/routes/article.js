@@ -7,6 +7,8 @@ import path from 'path'
 import Article from '../models/article.js'
 import User from '../models/user.js'
 import { verifyUser } from '../utils/auth.js'
+import { parseSearchQuery } from '../utils/validate.js'
+import user from '../models/user.js'
 
 const router = express.Router()
 
@@ -23,17 +25,45 @@ const upload = multer({storage})
 
 
 //need to aggregate better
-router.get('/', (req, res) => {
-    Article.find().limit(50).then(article_data =>{
-        if(article_data){
-            res.status(200).send(article_data)
-            console.log(article_data)
-        }else throw 'Article not found'
-    }).catch((err)=>{
-        res.status(500).send({error:err})
-        console.log(err)
-    })
 
+
+
+router.get('/', parseSearchQuery, (req, res) => {
+    console.log('what')
+    const pageQuery = {
+        ...req.query,
+        user_id: req.query.user_id,
+        page: undefined,
+        limit: undefined
+    }
+    
+    const pageOption = {
+        page: req.query.page,
+        limit: req.query.limit
+    }
+    console.log(pageQuery)
+    try{
+        Article.paginate(pageQuery,pageOption,(err,result)=>{
+            
+                if (err) throw err
+                if (result) {
+                    let searchres = {
+                        page: result.page,
+                        total_pages: result.totalPages,
+                        limit: result.limit,
+                        total: result.totalDocs,
+                        result: result.docs
+                    }
+                    res.status(200).send(searchres)
+                    console.log(searchres)
+                }else throw 'Article not found'
+            
+
+        })
+    }catch(e){
+        res.status(500).send({error:e})
+        console.log(e)
+    }
 })
 
 
@@ -60,7 +90,7 @@ router.post('/create', verifyUser, async (req,res) =>{
 
 
 router.get('/id/:id', async (req, res) => {
-    var article = await Article.findOne({_id:req.params.id})
+    let article = await Article.findOne({_id:req.params.id})
     if (article) Article.updateOne({_id:req.params.id},{views:{$inc: { seq: 1} }})
     console.log(article)
     res.status(200).send(article)
