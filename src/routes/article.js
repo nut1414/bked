@@ -39,7 +39,15 @@ router.get('/', parseSearchQuery, (req, res) => {
     
     const pageOption = {
         page: req.query.page,
-        limit: req.query.limit
+        limit: req.query.limit,
+        select:{
+            title: 1,
+            user_id: 1,
+            tags: 1,
+            pic: 1,
+            views: 1,
+            shares: 1,
+        }
     }
     console.log(pageQuery)
     try{
