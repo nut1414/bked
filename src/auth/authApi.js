@@ -1,10 +1,9 @@
 import express from 'express'
 import passport from 'passport'
-import process from 'process'
-import jwt from 'jsonwebtoken'
-import { getToken } from '../utils/auth.js'
+import { getToken } from './authUtil.js'
 
 const router = express.Router()
+
 
 router.post('/signup', passport.authenticate('signup', {session:false}),
  async (req, res) => {
@@ -35,5 +34,7 @@ router.post('/login', (req, res, next) => {
         )(req, res, next)
     }
 )
+
+
 
 export default router

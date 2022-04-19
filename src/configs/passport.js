@@ -1,10 +1,9 @@
+import 'dotenv/config'
 import passport from 'passport'
 import passportLocal from 'passport-local'
 import passportJwt from 'passport-jwt'
 import bcrypt from 'bcrypt'
-import dotenv from 'dotenv'
-import User from '../models/user.js'
-dotenv.config()
+import User from '../users/user.js'
 
 const JwtStrategy = passportJwt.Strategy,
     ExtractJwt = passportJwt.ExtractJwt,

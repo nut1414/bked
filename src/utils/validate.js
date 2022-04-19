@@ -1,5 +1,5 @@
 import { query } from 'express'
-import User from '../models/user.js'
+import User from '../users/user.js'
 
 export const validateEmail = (email) => {
     const re = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/

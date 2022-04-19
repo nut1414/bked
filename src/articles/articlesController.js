@@ -1,34 +1,10 @@
 import express from 'express'
-import multer from 'multer'
-import { nanoid } from 'nanoid'
-import * as mime from 'mime-types'
-import fs from 'fs'
-import path from 'path'
-import Article from '../models/article.js'
-import User from '../models/user.js'
-import { verifyUser } from '../utils/auth.js'
-import { parsePageQuery, parseArticleQuery } from '../utils/validate.js'
-import user from '../models/user.js'
+import Article from './article.js'
+import { User } from '../users/index.js'
 
 const router = express.Router()
 
-const storage = multer.diskStorage({
-    destination: (req,file,cb) => {
-        cb(null, 'uploads/')
-    },
-    filename: (req, file, cb) => {
-        req.filename = nanoid() + '.' + mime.extension(file.mimetype)
-        cb(null,req.filename)
-    }
-})
-const upload = multer({storage})
-
-
-
-
-
-
-router.get('/', parsePageQuery, parseArticleQuery, (req, res) => {
+export const articleQuery = (req, res) => {
     const pageQuery = {
         ...req.query,
         user_id: req.query.user_id,
@@ -61,7 +37,7 @@ router.get('/', parsePageQuery, parseArticleQuery, (req, res) => {
                         result: result.docs
                     }
                     res.status(200).send(searchres)
-                }else throw 'Article not found'
+                }else throw new Error('Article not found')
             
 
         })
@@ -69,19 +45,17 @@ router.get('/', parsePageQuery, parseArticleQuery, (req, res) => {
         res.status(500).send({error:e})
         console.log(e)
     }
-})
+}
 
-
-
-router.post('/create', verifyUser, async (req,res) =>{
+export const articleCreate = async (req,res) =>{
     let user = await User.findOne({_id:req.user._id})
     try{
-        if(!user) throw 'User does not exist.'
+        if(!user) throw new Error('User does not exist.')
         const article = new Article({
             title: req.body.title,
             user_id: req.user._id,
             text: req.body.text})
-        if(!article) throw 'Fail to create article.'
+        if(!article) throw new Error('Fail to create article.')
         await user.articles.push(article._id)
         await article.save()
         await user.save()
@@ -91,23 +65,22 @@ router.post('/create', verifyUser, async (req,res) =>{
         res.status(500).send({error:err})
         console.log(err)
     }
-})
+}
 
-
-router.get('/id/:id', async (req, res) => {
+export const articleById = async (req, res) => {
     let article = await Article.findOne({_id:req.params.id})
     if (article) Article.updateOne({_id:req.params.id},{views:{$inc: { seq: 1} }})
     console.log(article)
     res.status(200).send(article)
-})
+}
 
-router.delete('/id/:id', verifyUser, async (req,res) =>{
+export const articleByIdDelete = async (req,res) =>{
     let user = await User.findOne({_id:req.user._id})
     let article = await Article.findOne({_id:req.params.id})
     try{
-        if(!user) throw 'User does not exist.'
-        if(!article) throw 'Article does not exist.'
-        if(article.user_id != req.user._id) throw 'User does not have permission to delete this.'
+        if(!user) throw new Error('User does not exist.')
+        if(!article) throw new Error('Article does not exist.')
+        if(article.user_id != req.user._id) throw new Error('User does not have permission to delete this.')
         
         await User.updateOne({ _id:req.user._id }, {
             $pullAll: {
@@ -121,7 +94,8 @@ router.delete('/id/:id', verifyUser, async (req,res) =>{
         res.status(500).send({error:err})
         console.log(err)
     }
-})
+}
+
 
 
 //untested

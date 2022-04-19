@@ -1,29 +1,11 @@
 import express from 'express'
-import multer from 'multer'
-import { nanoid } from 'nanoid'
-import * as mime from 'mime-types'
 import fs from 'fs'
 import path from 'path'
-import User from '../models/user.js'
-import passport from 'passport'
-import { verifyUser } from '../utils/auth.js'
-import { parsePageQuery, parseUserQuery } from '../utils/validate.js'
+import User from './user.js'
 
 const router = express.Router()
-const storage = multer.diskStorage({
-    destination: (req,file,cb) => {
-        cb(null, 'uploads/')
-    },
-    filename: (req, file, cb) => {
-        req.filename = nanoid() + '.' + mime.extension(file.mimetype)
-        cb(null,req.filename)
-    }
-})
-const upload = multer({storage})
 
-
-
-router.get('/', parsePageQuery, parseUserQuery, (req, res) => {
+export const userQuery = (req, res) =>  {
     const pageQuery = {
         ...req.query,
         user_id: req.query.user_id,
@@ -56,45 +38,28 @@ router.get('/', parsePageQuery, parseUserQuery, (req, res) => {
                     }
                     res.status(200).send(searchres)
                     console.log(searchres)
-                }else throw 'Article not found'
+                }else throw new Error('Article not found')
         })
     }catch(e){
         res.status(500).send({error:e})
         console.log(e)
     }
-})
+}
 
-
-router.get('/', (req, res) => {
-    User.find().then(user_data => {
-        if(user_data){
-            res.status(200).send(user_data)
-            console.log(user_data)
-        }else throw 'User not found'
-    }).catch((err)=>{
-        res.status(500).send({error:err})
-        console.log(err)
-    })
-
-})
-
-
-router.get('/id/:id', (req, res) => {
+export const userById = (req, res) => {
     User.findOne({user_id:req.params.id}).then(user_data => {
         if(user_data){
             res.status(200).send(user_data)
             console.log(user_data)
-        }else throw 'User not found'
+        }else throw new Error('User not found')
     }).catch((err)=>{
         res.status(500).send({error:err})
         console.log(err)
     })
 
-})
+}
 
-//pic upload are temporary showcase of authentication
-
-router.post('/id/:id/picup', verifyUser, upload.single('image'), async (req, res) => {
+export const profilePicUp = async (req, res) => {
     let user = await User.findOne({user_id:req.params.id})
     if(!user) res.status(500).send({error:'Unknown User.'})
     if(req.filename && user._id.equals(req.user._id)){
@@ -111,7 +76,7 @@ router.post('/id/:id/picup', verifyUser, upload.single('image'), async (req, res
                     if(update_ud){
                         console.log(req.filename)
                         res.status(200).send({status:'Success!'})
-                    }else throw 'Unable to complete request.'
+                    }else throw new Error('Unable to complete request.')
                 }
             )
         }catch(err){
@@ -124,10 +89,9 @@ router.post('/id/:id/picup', verifyUser, upload.single('image'), async (req, res
                          .catch(e=>console.log(e))
         res.status(500).send({error:'Unable to complete request.'})
     }
-})
+}
 
-
-router.post('/id/:id/bgpicup', verifyUser, upload.single('image'), async (req, res) => {
+export const bgPicUp = async (req, res) => {
     let user = await User.findOne({user_id:req.params.id})
     if(!user) res.status(500).send({error:'Unknown User.'})
     if(req.filename && user._id.equals(req.user._id)){
@@ -144,7 +108,7 @@ router.post('/id/:id/bgpicup', verifyUser, upload.single('image'), async (req, r
                     if(update_ud){
                         console.log(req.filename)
                         res.status(200).send({status:'Success!'})
-                    }else throw 'Unable to complete request.'
+                    }else throw new Error('Unable to complete request.')
                 }
             )
         }catch(err){
@@ -158,9 +122,10 @@ router.post('/id/:id/bgpicup', verifyUser, upload.single('image'), async (req, r
                          .catch(e=>console.log(e))
         res.status(500).send({error:'Unable to complete request.'})
     }
-})
+}
 
-router.post('/profile/:id', async (req ,res) => {
+// to be continue
+export const generateProfile = async (req, res) => {
     const user = await User.findOne({user_id:req.params.id})
     const profile = await User.aggregate({
         $lookup:
@@ -175,31 +140,6 @@ router.post('/profile/:id', async (req ,res) => {
         res.status(500).send({error:err})
         console.log(err)
     }
-})
-
-
-/*
-router.post('/:id/bgpicup', upload.single('image'), async (req, res) => {
-    let user_data = await User.findOne({user_id:req.params.id})
-    if(req.filename && user_data){
-        await fs.promises.unlink(path.resolve('uploads',user_data.profile_bg)).catch(e=>console.log(e))
-        try{
-            User.findOneAndUpdate({user_id:req.params.id},{profile_bg:req.filename},{new:true}).then(update_ud=>{
-                if(update_ud){
-                    console.log(req.filename)
-                    res.status(200).send(update_ud)
-                    console.log(update_ud)
-                }else throw 'User not found'
-            })
-        }catch(err){
-            res.status(500).send({error:err})
-            console.log(err)
-            User.updateOne({user_id:req.params.id},{profile_bg:'default.jpg'})
-        }
-    }else{
-        res.status(500).send({error:'Unable to complete request.'})
-    }
-})
-*/
+}
 
 export default router
