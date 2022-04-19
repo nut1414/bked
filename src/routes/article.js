@@ -7,7 +7,7 @@ import path from 'path'
 import Article from '../models/article.js'
 import User from '../models/user.js'
 import { verifyUser } from '../utils/auth.js'
-import { parseSearchQuery } from '../utils/validate.js'
+import { parsePageQuery, parseArticleQuery } from '../utils/validate.js'
 import user from '../models/user.js'
 
 const router = express.Router()
@@ -24,12 +24,11 @@ const storage = multer.diskStorage({
 const upload = multer({storage})
 
 
-//need to aggregate better
 
 
 
-router.get('/', parseSearchQuery, (req, res) => {
-    console.log('what')
+
+router.get('/', parsePageQuery, parseArticleQuery, (req, res) => {
     const pageQuery = {
         ...req.query,
         user_id: req.query.user_id,
@@ -49,7 +48,6 @@ router.get('/', parseSearchQuery, (req, res) => {
             shares: 1,
         }
     }
-    console.log(pageQuery)
     try{
         Article.paginate(pageQuery,pageOption,(err,result)=>{
             
@@ -63,7 +61,6 @@ router.get('/', parseSearchQuery, (req, res) => {
                         result: result.docs
                     }
                     res.status(200).send(searchres)
-                    console.log(searchres)
                 }else throw 'Article not found'
             
 

@@ -1,6 +1,7 @@
 import mongoose from 'mongoose'
 import { validateEmail } from '../utils/validate.js'
 import bcrypt from 'bcrypt'
+import mongoosePaginate from 'mongoose-paginate-v2'
 
 const userSchema = new mongoose.Schema({
     user_id: {type: String, required: false, lowercase:true, default:'nah'},
@@ -13,9 +14,10 @@ const userSchema = new mongoose.Schema({
     articles: {type: [String], default:[]},
     followers: {type: [String], default:[]},
     following: {type: [String], default:[]},
-    role: {type: String, default: 'user', enum: ['user', 'admin']}
+    role: {type: String, default: 'user', enum: ['user', 'admin']},
 }, { timestamps: true })
 
+userSchema.plugin(mongoosePaginate)
 
 
 export default mongoose.model('User', userSchema)

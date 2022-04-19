@@ -7,7 +7,7 @@ import path from 'path'
 import User from '../models/user.js'
 import passport from 'passport'
 import { verifyUser } from '../utils/auth.js'
-
+import { parsePageQuery, parseUserQuery } from '../utils/validate.js'
 
 const router = express.Router()
 const storage = multer.diskStorage({
@@ -20,6 +20,49 @@ const storage = multer.diskStorage({
     }
 })
 const upload = multer({storage})
+
+
+
+router.get('/', parsePageQuery, parseUserQuery, (req, res) => {
+    const pageQuery = {
+        ...req.query,
+        user_id: req.query.user_id,
+        page: undefined,
+        limit: undefined
+    }
+    
+    const pageOption = {
+        page: req.query.page,
+        limit: req.query.limit,
+        select:{
+            title: 1,
+            user_id: 1,
+            profile_pic: 1,
+            profile_bg: 1,
+            profile_desc: 1,
+        }
+    }
+
+    try{
+        User.paginate(pageQuery,pageOption,(err,result)=>{
+                if (err) throw err
+                if (result) {
+                    const searchres = {
+                        page: result.page,
+                        total_pages: result.totalPages,
+                        limit: result.limit,
+                        total: result.totalDocs,
+                        result: result.docs
+                    }
+                    res.status(200).send(searchres)
+                    console.log(searchres)
+                }else throw 'Article not found'
+        })
+    }catch(e){
+        res.status(500).send({error:e})
+        console.log(e)
+    }
+})
 
 
 router.get('/', (req, res) => {
@@ -52,7 +95,7 @@ router.get('/id/:id', (req, res) => {
 //pic upload are temporary showcase of authentication
 
 router.post('/id/:id/picup', verifyUser, upload.single('image'), async (req, res) => {
-    let user = await User.findOne({user_id:req.user._id})
+    let user = await User.findOne({user_id:req.params.id})
     if(!user) res.status(500).send({error:'Unknown User.'})
     if(req.filename && user._id.equals(req.user._id)){
         if (user.profile_pic!='default.jpg')
@@ -116,6 +159,25 @@ router.post('/id/:id/bgpicup', verifyUser, upload.single('image'), async (req, r
         res.status(500).send({error:'Unable to complete request.'})
     }
 })
+
+router.post('/profile/:id', (req ,res) => {
+    const user = await User.findOne({user_id:req.params.id})
+    const profile = await User.aggregate({
+        $lookup:
+          {
+           
+          }
+     })
+    if(!user) res.status(500).send({error:'Unknown User.'})
+    try{
+
+    }catch(err){
+        res.status(500).send({error:err})
+        console.log(err)
+    }
+})
+
+
 /*
 router.post('/:id/bgpicup', upload.single('image'), async (req, res) => {
     let user_data = await User.findOne({user_id:req.params.id})
