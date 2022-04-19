@@ -75,7 +75,7 @@ export const parseUserQuery = async (req,res,next) => {
     let page = query.page
     let limit = query.limit
     let title = query.title
-    let user = query.user
+    var user = query.user
     try{
         
         if (query){

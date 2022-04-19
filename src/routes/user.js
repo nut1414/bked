@@ -160,7 +160,7 @@ router.post('/id/:id/bgpicup', verifyUser, upload.single('image'), async (req, r
     }
 })
 
-router.post('/profile/:id', (req ,res) => {
+router.post('/profile/:id', async (req ,res) => {
     const user = await User.findOne({user_id:req.params.id})
     const profile = await User.aggregate({
         $lookup:
