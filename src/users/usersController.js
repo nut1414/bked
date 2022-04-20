@@ -2,6 +2,7 @@ import express from 'express'
 import fs from 'fs'
 import path from 'path'
 import User from './user.js'
+import APIError from '../errors/APIError.js'
 
 const router = express.Router()
 
@@ -36,15 +37,13 @@ export const userQuery = async (req, res, next) => {
                 data: result.docs
             }
             res.status(200).send(searchres)
-        }else throw new Error('Article not found')
+        }else throw new APIError(404, 'Article not found')
     }catch(err){
         next(err)
-        //res.status(500).send({error:e})
-        //console.log(e)
+
     }
 }
 
-//to do - change all method to find by _id
 
 export const userById = async (req, res, next) => {
     try{
@@ -52,11 +51,10 @@ export const userById = async (req, res, next) => {
         if(user_data){
             res.status(200).send(user_data)
             console.log(user_data)
-        }else throw new Error('User not found.')
+        }else throw new APIError(500, 'User not found')
     }catch(err){
         next(err)
-        //res.status(500).send({ error:err })
-        //console.log(err)
+
     }
 }
 
@@ -73,11 +71,11 @@ export const profilePicUp = async (req, res, next) => {
             if (user_data){
                 console.log(req.filename)
                 res.status(200).send({status:'Success!'})
-            }else throw new Error('Unable to complete request.')
+            }else throw new APIError(500, 'Unable to complete request')
         }else{
             await fs.promises.unlink(path.resolve('uploads',req.filename))
                                 .catch(e=>console.log(e))
-            throw new Error('Unable to complete request.')
+            throw new APIError(500, 'Unable to complete request')
         }
     }catch(err){
         next(err)
@@ -99,11 +97,11 @@ export const bgPicUp = async (req, res, next) => {
             if (user_data){
                 console.log(req.filename)
                 res.status(200).send({status:'Success!'})
-            }else throw new Error('Unable to complete request.')
+            }else throw new APIError(500, 'Unable to complete request')
         }else{
             await fs.promises.unlink(path.resolve('uploads',req.filename))
                                 .catch(e=>console.log(e))
-            throw new Error('Unable to complete request.')
+            throw new APIError(500, 'Unable to complete request')
         }
     }catch(err){
         next(err)

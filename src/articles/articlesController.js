@@ -1,6 +1,7 @@
 import express from 'express'
 import Article from './article.js'
 import { User } from '../users/index.js'
+import APIError from '../errors/APIError.js'
 
 const router = express.Router()
 
@@ -37,7 +38,7 @@ export const articleQuery = async (req, res, next) => {
                 data: result.docs
             }
             res.status(200).send(searchres)
-        }else throw new Error('Article not found')
+        }else throw new APIError(404, 'Article not found')
 
     }catch(err){
         next(err)
@@ -49,12 +50,12 @@ export const articleQuery = async (req, res, next) => {
 export const articleCreate = async (req,res, next) =>{
     try{
         let user_data = await User.findOne({_id:req.user._id})
-        if(!user_data) throw new Error('User does not exist.')
+        if(!user_data) throw new APIError(404, 'User does not exist')
         const new_article = new Article({
             title: req.body.title,
             user_id: req.user._id,
             text: req.body.text})
-        if(!new_article) throw new Error('Fail to create article.')
+        if(!new_article) throw new APIError(500, 'Fail to create article')
         await user_data.articles.push(new_article._id)
         await new_article.save()
         await user_data.save()
@@ -74,7 +75,7 @@ export const articleById = async (req, res, next) => {
         if(article_data){
             res.status(200).send(article_data)
             console.log(article_data)
-        }else throw new Error('Article not found.')
+        }else throw new APIError(404, 'Article not found')
     }catch(err){
         next(err)
         //res.status(500).send({ error:err })
@@ -89,7 +90,7 @@ export const readArticleById = async (req, res, next) => {
             Article.findByIdAndUpdate(req.params.id,{views: {$inc: { seq: 1 } } })
             res.status(200).send(article_data)
             console.log(article_data)
-        }else throw new Error('Article not found.')
+        }else throw new APIError(404, 'Article not found')
     }catch(err){
         next(err)
         //res.status(500).send({ error:err })
@@ -102,9 +103,9 @@ export const articleByIdDelete = async (req, res, next) =>{
     try{
         let user_data = await User.findOne({_id:req.user._id})
         let article_data = await Article.findOne({_id:req.params.id})
-        if(!user_data) throw new Error('User does not exist.')
-        if(!article_data) throw new Error('Article does not exist.')
-        if(article_data.user_id != req.user._id) throw new Error('User does not have permission to delete this.')
+        if(!user_data) throw new APIError(404, 'User does not exist')
+        if(!article_data) throw new APIError(404, 'Article does not exist')
+        if(article_data.user_id != req.user._id) throw new APIError(401, 'Unauthorized')
         await User.updateOne({ _id:req.user._id }, {
             $pullAll: {
                 articles: [req.params.id],
