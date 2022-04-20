@@ -4,95 +4,119 @@ import { User } from '../users/index.js'
 
 const router = express.Router()
 
-export const articleQuery = (req, res) => {
-    const pageQuery = {
-        ...req.query,
-        user_id: req.query.user_id,
-        page: undefined,
-        limit: undefined
-    }
-    
-    const pageOption = {
-        page: req.query.page,
-        limit: req.query.limit,
-        select:{
-            title: 1,
-            user_id: 1,
-            tags: 1,
-            pic: 1,
-            views: 1,
-            shares: 1,
-        }
-    }
+export const articleQuery = async (req, res, next) => {
     try{
-        Article.paginate(pageQuery,pageOption,(err,result)=>{
-            
-                if (err) throw err
-                if (result) {
-                    let searchres = {
-                        page: result.page,
-                        total_pages: result.totalPages,
-                        limit: result.limit,
-                        total: result.totalDocs,
-                        result: result.docs
-                    }
-                    res.status(200).send(searchres)
-                }else throw new Error('Article not found')
-            
+        const pageQuery = {
+            ...req.query,
+            user_id: req.query.user_id,
+            page: undefined,
+            limit: undefined
+        }
+        
+        const pageOption = {
+            page: req.query.page,
+            limit: req.query.limit,
+            select:{
+                title: 1,
+                user_id: 1,
+                tags: 1,
+                pic: 1,
+                views: 1,
+                shares: 1,
+                _id: 1
+            }
+        }
 
-        })
-    }catch(e){
-        res.status(500).send({error:e})
-        console.log(e)
+        result = await Article.paginate(pageQuery,pageOption)
+        if (result) {
+            const searchres = {
+                pg: result.page,
+                total_pg: result.totalPages,
+                limit: result.limit,
+                total: result.totalDocs,
+                data: result.docs
+            }
+            res.status(200).send(searchres)
+        }else throw new Error('Article not found')
+
+    }catch(err){
+        next(err)
+        //res.status(500).send({error:e})
+        //console.log(err)
     }
 }
 
-export const articleCreate = async (req,res) =>{
-    let user = await User.findOne({_id:req.user._id})
+export const articleCreate = async (req,res, next) =>{
     try{
-        if(!user) throw new Error('User does not exist.')
-        const article = new Article({
+        let user_data = await User.findOne({_id:req.user._id})
+        if(!user_data) throw new Error('User does not exist.')
+        const new_article = new Article({
             title: req.body.title,
             user_id: req.user._id,
             text: req.body.text})
-        if(!article) throw new Error('Fail to create article.')
-        await user.articles.push(article._id)
-        await article.save()
-        await user.save()
-
-        res.send({status: 'ok' , message: 'Article created.', article_id: article._id })
+        if(!new_article) throw new Error('Fail to create article.')
+        await user_data.articles.push(new_article._id)
+        await new_article.save()
+        await user_data.save()
+        res.send({status: 'ok' , message: 'Article created.', article_id: new_article._id })
     } catch(err){
-        res.status(500).send({error:err})
-        console.log(err)
+        next(err)
+        //res.status(500).send({error:err})
+        //console.log(err)
     }
 }
 
-export const articleById = async (req, res) => {
-    let article = await Article.findOne({_id:req.params.id})
-    if (article) Article.updateOne({_id:req.params.id},{views:{$inc: { seq: 1} }})
-    console.log(article)
-    res.status(200).send(article)
+
+
+export const articleById = async (req, res, next) => {
+    try{
+        const article_data = await Article.findById(req.params.id,{ title:1, user_id:1, tags: 1, pic: 1, views: 1, shares: 1 })
+        if(article_data){
+            res.status(200).send(article_data)
+            console.log(article_data)
+        }else throw new Error('Article not found.')
+    }catch(err){
+        next(err)
+        //res.status(500).send({ error:err })
+        //console.log(err)
+    }
 }
 
-export const articleByIdDelete = async (req,res) =>{
-    let user = await User.findOne({_id:req.user._id})
-    let article = await Article.findOne({_id:req.params.id})
+export const readArticleById = async (req, res, next) => {
     try{
-        if(!user) throw new Error('User does not exist.')
-        if(!article) throw new Error('Article does not exist.')
-        if(article.user_id != req.user._id) throw new Error('User does not have permission to delete this.')
-        
+        const article_data = await Article.findById(req.params.id,{ title:1, text:1, user_id:1, tags: 1, pic: 1, views: 1, shares: 1 })
+        if(article_data){
+            Article.findByIdAndUpdate(req.params.id,{views: {$inc: { seq: 1 } } })
+            res.status(200).send(article_data)
+            console.log(article_data)
+        }else throw new Error('Article not found.')
+    }catch(err){
+        next(err)
+        //res.status(500).send({ error:err })
+        //console.log(err)
+    }
+}
+
+
+export const articleByIdDelete = async (req, res, next) =>{
+    try{
+        let user_data = await User.findOne({_id:req.user._id})
+        let article_data = await Article.findOne({_id:req.params.id})
+        if(!user_data) throw new Error('User does not exist.')
+        if(!article_data) throw new Error('Article does not exist.')
+        if(article_data.user_id != req.user._id) throw new Error('User does not have permission to delete this.')
         await User.updateOne({ _id:req.user._id }, {
             $pullAll: {
                 articles: [req.params.id],
             },
-        });
+        })
         await Article.deleteOne({_id:req.params.id})
+        res.send({status: 'ok' , message: 'Article deleted.', article_id: article_data._id })
 
-        res.send({status: 'ok' , message: 'Article deleted.', article_id: article._id })
     } catch(err){
-        res.status(500).send({error:err})
-        console.log(err)
+        next(err)
+        //res.status(500).send({error:err})
+        //console.log(err)
     }
 }
 
