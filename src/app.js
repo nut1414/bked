@@ -6,6 +6,7 @@ import { usersRoute } from './users/index.js'
 import { articlesRoute } from './articles/index.js'
 import { authRoute } from './auth/index.js'
 import bodyParser from 'body-parser'
+import errorHandler from './errors/errorHandler.js'
 import './configs/passport.js'
 
 const __dirname = path.resolve()
@@ -19,6 +20,8 @@ app.use('/users', usersRoute)
 app.use('/articles', articlesRoute)
 app.use('/auth', authRoute)
 app.use('/uploads', express.static(path.join(__dirname,'uploads')))
+
+app.use(errorHandler)
 
 app.get('/',(req,res) =>{
     res.status(200).send('Service is online.')
