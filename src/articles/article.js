@@ -4,7 +4,7 @@ import mongoosePaginate from 'mongoose-paginate-v2'
 
 const articleSchema = new mongoose.Schema({
     title: { type: String, required: true },
-    user_id: { type: String, required: true },
+    user_id: { type: mongoose.ObjectId, required: true },
     tags: {type: [String], default: [] },
     pic: { type: String, default: 'defaultbg.jpg' },
     text: { type: String, required: true },

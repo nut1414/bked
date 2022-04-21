@@ -3,6 +3,7 @@ import fs from 'fs'
 import path from 'path'
 import User from './user.js'
 import APIError from '../errors/APIError.js'
+import mongoose from 'mongoose'
 
 const router = express.Router()
 
@@ -40,7 +41,6 @@ export const userQuery = async (req, res, next) => {
         }else throw new APIError(404, 'Article not found')
     }catch(err){
         next(err)
-
     }
 }
 
@@ -79,8 +79,6 @@ export const profilePicUp = async (req, res, next) => {
         }
     }catch(err){
         next(err)
-        //res.status(500).send({ error:err })
-        //console.log(err)
     }
 }
 
@@ -105,26 +103,46 @@ export const bgPicUp = async (req, res, next) => {
         }
     }catch(err){
         next(err)
-        //res.status(500).send({ error:err })
-        //console.log(err)
     }
 }
 
-// to be continue
-export const generateProfile = async (req, res, next) => {
-    const user = await User.findOne({user_id:req.params.id})
-    const profile = await User.aggregate({
-        $lookup:
-          {
-           
-          }
-     })
-    if(!user) res.status(500).send({error:'Unknown User.'})
-    try{
+// https://mongoplayground.net/p/yrPUYMTbcoc
 
+export const generateProfile = async (req, res, next) => {
+    try{
+        const profile = await User.aggregate([
+            {
+                $lookup:
+                {
+                    from:'Article',
+                    localField: '_id',
+                    foreignField: 'user_id',
+                    as: 'articles_all'
+                }
+            },
+            {
+                $project:
+                {
+                    "display_name": true,
+                    "profile_desc": true,
+                    "profile_pic": true,
+                    "profile_bg": true,
+                    "articles_all": true,
+                    "followers": true,
+                    "following": true
+                }
+            },
+            {
+                $match:
+                {
+                    "_id": mongoose.Types.ObjectId(req.params.id)
+                }
+            }
+        ])
+    if (profile.length != 0)
+    res.status(200).send({result:profile})
     }catch(err){
-        res.status(500).send({error:err})
-        console.log(err)
+        next(err)
     }
 }
 

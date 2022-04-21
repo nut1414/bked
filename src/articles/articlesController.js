@@ -53,7 +53,7 @@ export const articleCreate = async (req,res, next) =>{
         if(!user_data) throw new APIError(404, 'User does not exist')
         const new_article = new Article({
             title: req.body.title,
-            user_id: req.user._id,
+            user_id: user_data._id,
             text: req.body.text})
         if(!new_article) throw new APIError(500, 'Fail to create article')
         await user_data.articles.push(new_article._id)
@@ -116,8 +116,6 @@ export const articleByIdDelete = async (req, res, next) =>{
 
     } catch(err){
         next(err)
-        //res.status(500).send({error:err})
-        //console.log(err)
     }
 }
 

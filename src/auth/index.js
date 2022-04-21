@@ -1,4 +1,4 @@
-import authRoute from './authApi.js'
+import authRoute from './authAPI.js'
 import * as authUtil from './authUtil.js'
 
 export {

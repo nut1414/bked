@@ -11,9 +11,9 @@ const userSchema = new mongoose.Schema({
     profile_pic: {type: String, default:'default.jpg'},
     profile_bg: {type: String, default:'defaultbg.jpg'},
     profile_desc: {type: String, default:''},
-    articles: {type: [String], default:[]},
-    followers: {type: [String], default:[]},
-    following: {type: [String], default:[]},
+    articles: {type: [mongoose.ObjectId], default:[]},
+    followers: {type: [mongoose.ObjectId], default:[]},
+    following: {type: [mongoose.ObjectId], default:[]},
     role: {type: String, default: 'user', enum: ['user', 'admin']},
 }, { timestamps: true })
 
