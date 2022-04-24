@@ -11,7 +11,7 @@ export const userQuery = async (req, res, next) => {
     try{
         const pageQuery = {
             ...req.query,
-            user_id: req.query.user_id,
+            _id: req.query.user_id,
             page: undefined,
             limit: undefined
         }

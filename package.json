@@ -35,7 +35,7 @@
     "supertest": "^6.2.2"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand",
     "start": "node src/server.js",
     "dev": "npx nodemon src/server.js"
   },

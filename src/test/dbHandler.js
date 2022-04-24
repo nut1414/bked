@@ -1,11 +1,11 @@
-const mongoose = require('mongoose')
+import mongoose from 'mongoose'
 
-module.exports.connect = async () => {
+export const connect = async () => {
     const uri = process.env.MONGO_URI
     await mongoose.connect(uri)
 }
 
-module.exports.disconnect = async () => {
+export const disconnect = async () => {
     await mongoose.connection.dropDatabase()
     await mongoose.connection.close()
 }

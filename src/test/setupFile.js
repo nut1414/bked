@@ -1,4 +1,4 @@
-const { connect, disconnect } = require('./dbHandler.js')
+import { connect, disconnect } from './dbHandler.js'
 
 beforeAll(async ()=>{
     await connect()    

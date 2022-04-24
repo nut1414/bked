@@ -1,4 +1,5 @@
 {
+    "testEnvironment": "jest-environment-node",
     "globalSetup": "<rootDir>/src/test/globalSetup.js",
     "globalTeardown": "<rootDir>/src/test/globalTeardown.js",
     "setupFilesAfterEnv": [

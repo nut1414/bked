@@ -1,9 +1,10 @@
 import 'dotenv/config'
-import passport from './passport'
+import passport from 'passport'
 import passportLocal from 'passport-local'
 import passportJwt from 'passport-jwt'
 import bcrypt from 'bcrypt'
 import User from '../users/user.js'
+import APIError from '../errors/APIError.js'
 
 const JwtStrategy = passportJwt.Strategy,
     ExtractJwt = passportJwt.ExtractJwt,
@@ -12,13 +13,15 @@ const JwtStrategy = passportJwt.Strategy,
 const opts = {}
 
 
-passport.use('signup',new LocalStrategy(
+passport.use('signup', new LocalStrategy(
         {
             usernameField: 'email',
             passwordField: 'password'
         },
         async (email, password, done) => {
             try{
+                if (await User.findOne({email})) throw new APIError('User already existed',409)
+                if (!email || !password) throw new APIError('Bad Request',400)
                 const hash = await bcrypt.hash(password,10);
                 const user = await User.create({email, password:hash})
                 return done(null, user)
@@ -37,13 +40,12 @@ passport.use('login', new LocalStrategy(
         async (email, password, done) => {
             try{
                 const user = await User.findOne({email})
-                console.log(user)
                 if(!user){
-                    return done(null, false, {message:'Invalid User/Password'})
+                    throw new APIError('Invalid User or Password',400)
                 }
                 const isvalid = await bcrypt.compare(password,user.password)
                 if(!isvalid){
-                    return done(null,false, {message:'Invalid User/Password'})
+                    throw new APIError('Invalid User or Password',400)
                 }
                 return done(null, user, {message:'Logged in Successfully'})
             }catch(err){
