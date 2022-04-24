@@ -1,5 +1,5 @@
 import 'dotenv/config'
-import passport from 'passport'
+import passport from './passport'
 import passportLocal from 'passport-local'
 import passportJwt from 'passport-jwt'
 import bcrypt from 'bcrypt'

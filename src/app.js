@@ -1,4 +1,3 @@
-import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
 import path from 'path'
@@ -7,8 +6,6 @@ import { articlesRoute } from './articles/index.js'
 import { authRoute } from './auth/index.js'
 import bodyParser from 'body-parser'
 import errorHandler from './errors/errorHandler.js'
-import './configs/passport.js'
-
 const __dirname = path.resolve()
 
 const app = express()
