@@ -9,14 +9,13 @@ export const articleQuery = async (req, res, next) => {
     try{
         const pageQuery = {
             ...req.query,
-            user_id: req.query.user_id,
             page: undefined,
             limit: undefined
         }
         
         const pageOption = {
-            page: req.query.page,
-            limit: req.query.limit,
+            page: req.query.page || 1,
+            limit: req.query.limit || 25,
             select:{
                 title: 1,
                 user_id: 1,
@@ -28,7 +27,7 @@ export const articleQuery = async (req, res, next) => {
             }
         }
 
-        result = await Article.paginate(pageQuery,pageOption)
+        const result = await Article.paginate(pageQuery,pageOption)
         if (result) {
             const searchres = {
                 pg: result.page,
@@ -74,7 +73,6 @@ export const articleById = async (req, res, next) => {
         const article_data = await Article.findById(req.params.id,{ title:1, user_id:1, tags: 1, pic: 1, views: 1, shares: 1 })
         if(article_data){
             res.status(200).send(article_data)
-            console.log(article_data)
         }else throw new APIError(404, 'Article not found')
     }catch(err){
         next(err)
@@ -87,9 +85,8 @@ export const readArticleById = async (req, res, next) => {
     try{
         const article_data = await Article.findById(req.params.id,{ title:1, text:1, user_id:1, tags: 1, pic: 1, views: 1, shares: 1 })
         if(article_data){
-            Article.findByIdAndUpdate(req.params.id,{views: {$inc: { seq: 1 } } })
+            await Article.findByIdAndUpdate(req.params.id,{ $inc: { views: 1 }})
             res.status(200).send(article_data)
-            console.log(article_data)
         }else throw new APIError(404, 'Article not found')
     }catch(err){
         next(err)

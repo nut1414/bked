@@ -7,7 +7,7 @@ const articleSchema = new mongoose.Schema({
     user_id: { type: mongoose.ObjectId, required: true },
     tags: {type: [String], default: [] },
     pic: { type: String, default: 'defaultbg.jpg' },
-    text: { type: String, required: true },
+    text: { type: String, required: true, default:' ' },
     views: { type: Number, default: 0 },
     shares: { type: Number, default: 0 },
 }, { timestamps: true })

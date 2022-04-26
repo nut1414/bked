@@ -8,7 +8,6 @@ const regisData = {
 }
 
 describe('Auth API', () => {
-    
     test('POST /auth/signup', async () => {
         const response = await request(app).post("/auth/signup").send(regisData)
         
@@ -26,7 +25,5 @@ describe('Auth API', () => {
             expect(response.statusCode).toBe(400)
             expect(response.body.error).toBe('Invalid User or Password')
         }
-        
     })
-    
 })

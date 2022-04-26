@@ -11,14 +11,13 @@ export const userQuery = async (req, res, next) => {
     try{
         const pageQuery = {
             ...req.query,
-            _id: req.query.user_id,
             page: undefined,
             limit: undefined
         }
-        
+
         const pageOption = {
-            page: req.query.page,
-            limit: req.query.limit,
+            page: req.query.page || 1,
+            limit: req.query.limit || 20,
             select:{
                 display_name: 1,
                 profile_pic: 1,
@@ -38,7 +37,7 @@ export const userQuery = async (req, res, next) => {
                 data: result.docs
             }
             res.status(200).send(searchres)
-        }else throw new APIError(404, 'Article not found')
+        }else throw new APIError(404, 'User not found')
     }catch(err){
         next(err)
     }
@@ -50,12 +49,11 @@ export const userById = async (req, res, next) => {
         const user_data = await User.findById(req.params.id)
         if(user_data){
             res.status(200).send(user_data)
-            console.log(user_data)
         }else throw new APIError(500, 'User not found')
     }catch(err){
         next(err)
-
     }
+
 }
 
 export const profilePicUp = async (req, res, next) => {
@@ -140,7 +138,7 @@ export const generateProfile = async (req, res, next) => {
             }
         ])
     if (profile.length != 0)
-    res.status(200).send({result:profile})
+    res.status(200).send({result:profile[0]})
     }catch(err){
         next(err)
     }

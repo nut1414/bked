@@ -22,7 +22,7 @@ passport.use('signup', new LocalStrategy(
             try{
                 if (await User.findOne({email})) throw new APIError('User already existed',409)
                 if (!email || !password) throw new APIError('Bad Request',400)
-                const hash = await bcrypt.hash(password,10);
+                const hash = await bcrypt.hash(password,10)
                 const user = await User.create({email, password:hash})
                 return done(null, user)
             }catch(err){
